@@ -3,13 +3,22 @@ services:
   alpine:
     image: alpine:latest
     container_name: alpine
+    # network_mode: "host"
     command: sh -c 'tail -f /dev/null'
+
+  middleware:
+    build:
+      context: ./node
+    ports:
+     - '127.0.0.1:3001:3001'
+    # restart: always
+    container_name: middleware
 
   telegraf:
     image: telegraf:1.18-alpine
     container_name: telegraf
     volumes:
-    - ./telegraf/etc/telegraf.conf:/etc/telegraf/telegraf.conf:rw
+    - ./telegraf/etc/telegraf-container.conf:/etc/telegraf/telegraf.conf:rw
     - ./telegraf/etc:/etc/telegraf
     - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
@@ -29,7 +38,7 @@ services:
       - influxdb_data:/var/lib/influxdb
 
   grafana:
-    image: grafana/grafana:7.5.4
+    image: grafana/grafana:8.0.0
     container_name: grafana
     depends_on:
       - influxdb
@@ -39,8 +48,8 @@ services:
       - '127.0.0.1:3000:3000'
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
-      - ./grafana/dashboards/:/var/lib/grafana/dashboards/
+      - ./grafana-provisioning/:/etc/grafana/provisioning/
+      - ./grafana-dashboard/:/etc/grafana/dashboards/
 
 volumes:
   grafana_data: {}
